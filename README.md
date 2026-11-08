@@ -68,7 +68,7 @@ Pasted them the other way round? Swap the words in the ask.
 
 ## Made by
 
-[Ahmd](https://github.com/pyfork) / [LinkedIn](https://www.linkedin.com/in/redza/)
+[Ahmd](https://github.com/pyfork) / [LinkedIn](https://www.linkedin.com/in/pyfork/)
 
 ## License
 
