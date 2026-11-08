@@ -3,7 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>sbs · side by side with labels</title>
+<title>Combine Images Online Free – Merge Photos Easily</title>
+<meta name="description" content="Combine images online for free. Merge two or more photos into one image, arrange them side by side or create a simple collage. No software installation required.">
+<link rel="canonical" href="https://tekapo.co/sbs/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://tekapo.co/sbs/">
+<meta property="og:title" content="Combine Images Online Free">
+<meta property="og:description" content="Merge two or more photos into one image. Arrange images side by side and create your combined image online.">
+<meta property="og:image" content="https://tekapo.co/sbs/docs-public/combine-two-images-side-by-side.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Two invoice screenshots combined side by side into one image, with green LEFT and RIGHT labels.">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"sbs","url":"https://tekapo.co/sbs/","description":"Combine two images side by side or stacked, with optional LEFT and RIGHT labels. Runs in your browser; nothing is uploaded.","applicationCategory":"MultimediaApplication","operatingSystem":"Any (web browser)","isAccessibleForFree":true,"offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"author":{"@type":"Person","name":"Ahmd","url":"https://github.com/pyfork"}}</script>
 <script>try { const t = localStorage.getItem('sbs-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch {}</script>
 <style>
   :root {
@@ -17,7 +29,7 @@
     --edge: light-dark(rgba(0,0,0,0.2), rgba(255,255,255,0.22));
     --edge-hi: light-dark(rgba(0,0,0,0.45), rgba(255,255,255,0.5));
     --blue: light-dark(#3a57fc, #8c9dff);
-    --cta: #389168;            /* main buttons only (Append, Download) */
+    --cta: #389168;            /* main buttons only (Combine, Download) */
     --orange-text: light-dark(#f75a03, #ffa04d);
     --track: light-dark(rgba(0,0,0,0.15), rgba(255,255,255,0.2));
     --field: light-dark(#ffffff, #0f1530);
@@ -43,13 +55,13 @@
   :focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 
   .top { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: 30px 32px 0 40px; }
-  .logo { font: var(--w-body) 22px/24px var(--sans); letter-spacing: -0.3px; color: var(--on-page); }
+  .logo { margin: 0; font: var(--w-body) 22px/24px var(--sans); letter-spacing: -0.3px; color: var(--on-page); }
   .logo b { font-weight: var(--w-head); letter-spacing: 0; }
 
   main { width: 100%; margin: 0 auto; padding-top: 104px; }
 
   .card { background: var(--card); padding: 32px 40px 48px; }
-  /* carousel: both cards sit side by side on one track. Append moves the track left; each card's content
+  /* carousel: both cards sit side by side on one track. Combine moves the track left; each card's content
      travels a little less than the card (parallax). Plain CSS transitions, no library. */
   .deck { overflow-x: clip; --gap: 48px; --t: 900ms; --ease: cubic-bezier(.65, .05, .36, 1); --para: 160px; }
   .track { width: 880px; max-width: 100%; margin: 0 auto; display: grid; grid-template-columns: 100% 100%; column-gap: var(--gap); align-items: start; transition: transform var(--t) var(--ease); }
@@ -185,7 +197,7 @@
 </svg>
 
 <div class="top">
-  <span class="logo"><b>SBS</b> - Join two images</span>
+  <h1 class="logo"><b>SBS</b> - Combine images online</h1>
 </div>
 
 <main class="deck">
@@ -212,7 +224,7 @@
     <p class="sr-only" id="pasteHint" aria-live="polite"></p>
 
     <div class="actions">
-      <button type="button" class="go" id="submitBtn" disabled>Append<svg class="ico" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+      <button type="button" class="go" id="submitBtn" disabled>Combine<svg class="ico" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
     </div>
   </section>
 
@@ -221,7 +233,7 @@
       <button type="button" class="reset-small" id="backBtn"><svg class="ico" aria-hidden="true"><use href="#i-arrow-left"/></svg><span>Back</span></button>
       <button type="button" class="reset-small" id="resetTwin"><svg class="ico" aria-hidden="true"><use href="#i-arrow-path"/></svg><span>Start over</span></button>
     </span></div>
-    <div class="shot" id="resultWrapper"><img id="resultImg" alt="appended result"></div>
+    <div class="shot" id="resultWrapper"><img id="resultImg" alt="combined result"></div>
     <p class="meta" id="resultMeta"></p>
     <p class="field-label mt24"><label for="filenameField">File name</label></p>
     <input class="filename-field" id="filenameField" spellcheck="false">
@@ -458,7 +470,7 @@
     state.out = canvas;
     $('resultImg').src = dataUrl;
     $('resultMeta').textContent =
-      `${canvas.width} × ${canvas.height}px · ${state.mode === 'h' ? 'horizontal' : 'vertical'} append (${labels ? 'with' : 'no'} labels)`;
+      `${canvas.width} × ${canvas.height}px · ${state.mode === 'h' ? 'side by side' : 'stacked'} (${labels ? 'with' : 'no'} labels)`;
 
     const suggested = `${stripExt(state.A.name)}_${stripExt(state.B.name)}.png`;
     $('filenameField').value = suggested;
@@ -467,7 +479,7 @@
     $('downloadBtn').onclick = () => {
       const a2 = document.createElement('a');
       a2.href = dataUrl;
-      a2.download = $('filenameField').value || 'appended.png';
+      a2.download = $('filenameField').value || 'combined.png';
       a2.click();
     };
   });
@@ -523,8 +535,8 @@
     if (moveFocus) $('slot' + k).focus({ preventScroll: true });
   });
 
-  // Append moves a two-card carousel to the result card; Back moves it back.
-  // One observer on the result's "show" class covers every path (Append, Back, clear, swap, new paste).
+  // Combine moves a two-card carousel to the result card; Back moves it back.
+  // One observer on the result's "show" class covers every path (Combine, Back, clear, swap, new paste).
   const deck = document.querySelector('.deck'), step1 = document.querySelector('.step1'), step2 = $('result');
   const still = matchMedia('(prefers-reduced-motion: reduce)');
   let showing = false, token = 0;
