@@ -2,7 +2,7 @@
 
 Put two screenshots side by side in one image, each marked LEFT or RIGHT, so a model can tell which is which.
 
-![sbs with two sample screens combined, a green LEFT bar and a green RIGHT bar](docs/example.jpg)
+![sbs with two sample screens combined, a green LEFT bar and a green RIGHT bar](docs-public/example.jpg)
 
 ## When it helps
 
