@@ -157,7 +157,7 @@ test('labels are on by default and can be turned off', async ({ page }) => {
   await expect(page.locator('#resultMeta')).toContainText('no labels');
 });
 
-test('append swaps card 1 for the result card, and back keeps both images', async ({ page }) => {
+test('combine swaps card 1 for the result card, and back keeps both images', async ({ page }) => {
   await pastePair(page);
   await page.click('#submitBtn');
   await expect(page.locator('.step1')).toBeHidden();
@@ -188,4 +188,13 @@ test('the landing page fits without scrolling on common laptop screens', async (
     await page.setViewportSize({ width, height });
     expect(await page.evaluate(() => document.documentElement.scrollHeight - innerHeight)).toBeLessThanOrEqual(0);
   }
+});
+
+test('one h1, and the search and share tags point at tekapo.co/sbs', async ({ page }) => {
+  await expect(page.locator('h1')).toHaveCount(1);
+  await expect(page.locator('h1')).toContainText('Combine images online');
+  await expect(page.locator('link[rel=canonical]')).toHaveAttribute('href', 'https://tekapo.co/sbs/');
+  await expect(page.locator('meta[name=description]')).toHaveAttribute('content', /^Combine images online/);
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', 'https://tekapo.co/sbs/docs-public/combine-two-images-side-by-side.png');
+  JSON.parse(await page.locator('script[type="application/ld+json"]').textContent());
 });

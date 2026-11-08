@@ -2,7 +2,7 @@
 
 Put two screenshots side by side in one image, each marked LEFT or RIGHT, so a model can tell which is which.
 
-![sbs with two invoice screenshots pasted into the Left image and Right image boxes, ready to append](docs-public/sbs-pick.jpg)
+![sbs with two invoice screenshots pasted into the Left image and Right image boxes, ready to combine](docs-public/sbs-pick.jpg)
 
 ![The result card: one image with a green LEFT bar and a green RIGHT bar, a file name, Copy image and Download](docs-public/sbs-result.jpg)
 
@@ -46,7 +46,7 @@ When a model gets something visual wrong, you end up describing it in words: "th
 
 1. Paste a screenshot (⌘V or Ctrl+V). It goes to the box marked "Paste goes here", LEFT first, then RIGHT. To pick the other box, click it or press the left or right arrow key. You can also drop an image on a box or press **Browse image**.
 2. Pick **Horizontal** or **Vertical**. Press the round swap button between the boxes if the order is wrong. **Add text labels to the output** is on; untick it for a plain join with no LEFT and RIGHT bars.
-3. Press **Append**. The result card slides in; press **Copy image** and paste it into your chat, or **Download** to save a PNG. **Back** returns to your two images.
+3. Press **Combine**. The result card slides in; press **Copy image** and paste it into your chat, or **Download** to save a PNG. **Back** returns to your two images.
 4. Press **Start over** to clear both boxes. Pasting a third image also starts a new pair. To replace just one side, pick that box and paste.
 
 The three round buttons at the bottom right switch between light, dark and your device settings.
