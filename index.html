@@ -114,7 +114,9 @@
   .browse .ico { width: 18px; height: 18px; }
   .browse:hover { border-color: var(--blue); background: light-dark(#f5f7ff, #18204a); }
   .slot .label { position: absolute; top: 8px; left: 8px; z-index: 2; padding: 2px 8px; border-radius: 4px; background: var(--card); border: 2px solid var(--edge); font: var(--w-head) 13px/18px var(--sans); letter-spacing: 0.5px; }
-  .slot .filename { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 16px 10px 6px; font: var(--w-body) 14px var(--sans); color: #fff; background: linear-gradient(transparent, rgba(0,0,0,.8) 45%); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .slot .filename { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; padding: 6px 10px; font: var(--w-body) 14px var(--sans); color: #fff; background: rgba(0,0,0,.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+  /* touch has no hover, so there the name stays visible */
+  @media (hover: hover) { .slot .filename { opacity: 0; transition: opacity .12s; } .slot:hover .filename, .slot:focus-visible .filename { opacity: 1; } }
   .slot .clear { position: absolute; top: 6px; right: 6px; z-index: 3; width: 30px; height: 30px; display: grid; place-items: center; padding: 0; border: 2px solid var(--edge); border-radius: 4px; background: var(--card); }
   .slot .clear .ico { width: 16px; height: 16px; }
 
