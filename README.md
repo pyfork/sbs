@@ -42,7 +42,7 @@ When a model gets something visual wrong, you end up describing it in words: "th
 
 ## Use it
 
-**Open the page:** https://pyfork.github.io/sbs/
+**Open the page:** https://tekapo.co/sbs/
 
 1. Paste a screenshot (⌘V or Ctrl+V). It goes to the box marked "Paste goes here", LEFT first, then RIGHT. To pick the other box, click it or press the left or right arrow key. You can also drop an image on a box or press **Browse image**.
 2. Pick **Horizontal** or **Vertical**. Press the round swap button between the boxes if the order is wrong. **Add text labels to the output** is on; untick it for a plain join with no LEFT and RIGHT bars.
