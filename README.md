@@ -64,6 +64,10 @@ Pasted them the other way round? Swap the words in the ask.
 - Both images are scaled to the same height (side by side) or the same width (stacked), so the smaller one is enlarged.
 - Browsers cap canvas size. If the combined image is too big, the page says so. Shrink the images and try again.
 
+## Made by
+
+[Ahmd](https://github.com/pyfork) / [LinkedIn](https://www.linkedin.com/in/redza/)
+
 ## License
 
 [MIT](LICENSE). Icons are [Heroicons](https://heroicons.com) by Tailwind Labs, also MIT.
