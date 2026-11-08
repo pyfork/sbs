@@ -1,0 +1,13 @@
+{
+  "name": "sbs",
+  "private": true,
+  "type": "module",
+  "description": "Put two screenshots side by side in one image, each marked LEFT or RIGHT.",
+  "license": "MIT",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1"
+  }
+}
