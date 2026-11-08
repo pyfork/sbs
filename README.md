@@ -2,9 +2,9 @@
 
 Put two screenshots side by side in one image, each marked LEFT or RIGHT, so a model can tell which is which.
 
-![sbs with two invoice screenshots pasted into the Left image and Right image boxes, ready to combine](docs-public/sbs-pick.jpg)
+![sbs with a low-poly portrait in the Left image box and another in the Right image box, Horizontal and text labels ticked, ready to combine](docs-public/sbs-pick.jpg)
 
-![The result card: one image with a green LEFT bar and a green RIGHT bar, a file name, Copy image and Download](docs-public/sbs-result.jpg)
+![The result card: the two portraits in one image with a green LEFT bar and a green RIGHT bar, a file name, Copy image, Copy file name and Download](docs-public/sbs-result.jpg)
 
 ## When it helps
 
