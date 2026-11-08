@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>sbs · side by side with labels</title>
+<script>try { const t = localStorage.getItem('sbs-theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch {}</script>
+<style>
+  :root {
+    color-scheme: light dark;
+    /* shortcut: light-dark() needs a browser from 2024 or later; add a prefers-color-scheme fallback if older ones matter */
+    --bg: light-dark(#f6f6f4, #0d0d0d);
+    --panel: light-dark(#ffffff, #161616);
+    --panel-border: light-dark(#d9d9d6, #2a2a2a);
+    --panel-border-active: light-dark(#3b6df0, #5b8cff);
+    --text: light-dark(#1b1b1b, #e8e8e8);
+    --text-dim: light-dark(#666660, #8a8a8a);
+    --accent: light-dark(#3b6df0, #5b8cff);
+    --accent-dim: light-dark(#dbe5ff, #2a3f6e);
+    --on-accent: light-dark(#ffffff, #0a0f1c);
+    --ok: light-dark(#12794c, #3ecf8e);
+    --danger: light-dark(#d12f2f, #ff6b6b);
+    --faint: light-dark(#b8b8b4, #444444);
+    --drop-bg: light-dark(#eaf0ff, #101826);
+    --chip-bg: light-dark(rgba(255,255,255,0.85), rgba(0,0,0,0.55));
+    --chip-edge: light-dark(#d9d9d6, #333333);
+    --swap-hover: light-dark(#e8eefc, #131b2e);
+    --disabled-bg: light-dark(#e4e4e1, #2a2a2a);
+    --disabled-text: light-dark(#9a9a95, #666666);
+    --checker: light-dark(#e6e6e3, #1a1a1a);
+    --field: light-dark(#f6f6f4, #0a0a0a);
+    --btn: light-dark(#f0f0ed, #202020);
+    --mono: 'SF Mono', 'Menlo', 'Consolas', monospace;
+  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 24px 48px;
+    gap: 24px;
+  }
+  .ico { width: 16px; height: 16px; flex: none; }
+  header {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px 16px;
+  }
+  h1 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin: 0;
+    color: var(--text);
+  }
+  .hint {
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+  header .hint { order: 3; flex-basis: 100%; }
+  #pasteHint { width: 100%; max-width: 900px; margin-top: -12px; }
+  .stage {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .slot {
+    flex: 1;
+    aspect-ratio: 4/3;
+    background: var(--panel);
+    border: 1.5px dashed var(--panel-border);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: border-color 0.12s ease, background 0.12s ease;
+    overflow: hidden;
+  }
+  .slot:hover { border-color: var(--faint); }
+  .slot:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .slot.filled {
+    border-style: solid;
+    border-color: var(--panel-border);
+  }
+  .slot.target {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-dim);
+  }
+  .slot.drag {
+    border-color: var(--panel-border-active);
+    background: var(--drop-bg);
+  }
+  .slot img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
+  .slot .placeholder {
+    color: var(--text-dim);
+    text-align: center;
+    padding: 8px 12px;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .slot .placeholder .big { width: 24px; height: 24px; color: var(--faint); }
+  .browse {
+    pointer-events: auto;
+    font: inherit;
+    font-size: 11px;
+    color: var(--text);
+    background: var(--btn);
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    padding: 4px 10px;
+    cursor: pointer;
+  }
+  .browse:hover { border-color: var(--faint); }
+  .slot .label {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    background: var(--chip-bg);
+    padding: 2px 6px;
+    border-radius: 3px;
+    z-index: 2;
+  }
+  .slot .filename {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    font-size: 10.5px;
+    color: #fff;
+    background: linear-gradient(transparent, rgba(0,0,0,0.85) 40%);
+    padding: 14px 8px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    z-index: 2;
+  }
+  .slot .clear {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    background: var(--chip-bg);
+    border: 1px solid var(--chip-edge);
+    border-radius: 4px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 3;
+  }
+  .slot .clear svg { width: 12px; height: 12px; }
+  .slot .clear:hover {
+    color: var(--danger);
+    border-color: var(--danger);
+  }
+  .swap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    border: 0;
+    background: none;
+    font: inherit;
+    user-select: none;
+    transition: color 0.12s ease, background 0.12s ease;
+    flex-shrink: 0;
+  }
+  .swap:hover {
+    color: var(--accent);
+    background: var(--swap-hover);
+  }
+  .swap .ico { width: 20px; height: 20px; }
+  .swap span { font-size: 9px; letter-spacing: 0.06em; }
+
+  input[type=file] { display: none; }
+
+  .controls {
+    width: 100%;
+    max-width: 900px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+  }
+  .mode {
+    display: flex;
+    border: 1px solid var(--panel-border);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .mode button {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--panel);
+    border: none;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 11.5px;
+    padding: 9px 14px;
+    cursor: pointer;
+  }
+  .mode button.active {
+    background: var(--accent-dim);
+    color: var(--text);
+  }
+  .theme button { padding: 8px 11px; }
+  .spacer { flex: 1; }
+  button.submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent);
+    color: var(--on-accent);
+    border: none;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: 12.5px;
+    letter-spacing: 0.02em;
+    padding: 10px 22px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: opacity 0.12s ease, transform 0.05s ease;
+  }
+  button.submit:disabled {
+    background: var(--disabled-bg);
+    color: var(--disabled-text);
+    cursor: not-allowed;
+  }
+  button.submit:not(:disabled):hover { opacity: 0.9; }
+  button.submit:not(:disabled):active { transform: scale(0.98); }
+
+  .result {
+    width: 100%;
+    max-width: 900px;
+    display: none;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .result.show { display: flex; }
+  .result-panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .result-wrapper {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+  .image-container {
+    flex: 1;
+  }
+  .result-panel img {
+    max-width: 100%;
+    border-radius: 4px;
+    display: block;
+    background:
+      linear-gradient(45deg, var(--checker) 25%, transparent 25%),
+      linear-gradient(-45deg, var(--checker) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, var(--checker) 75%),
+      linear-gradient(-45deg, transparent 75%, var(--checker) 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+  }
+  .result-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+  }
+  .filename-field {
+    flex: 1 1 180px;
+    min-width: 0;
+    background: var(--field);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 8px 10px;
+    border-radius: 4px;
+  }
+  .action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--btn);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 11.5px;
+    padding: 8px 14px;
+    border-radius: 4px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .action-btn:not(:disabled):hover { border-color: var(--faint); }
+  .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .action-btn.copied {
+    border-color: var(--ok);
+    color: var(--ok);
+  }
+  .meta {
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+  @media (max-width: 480px) {
+    .slot { aspect-ratio: 1; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Icons are Heroicons (MIT, Tailwind Labs), https://heroicons.com -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3V5.25M18.364 5.63604L16.773 7.22703M21 12H18.75M18.364 18.364L16.773 16.773M12 18.75V21M7.22703 16.773L5.63604 18.364M5.25 12H3M7.22703 7.22703L5.63604 5.63604M15.75 12C15.75 14.0711 14.0711 15.75 12 15.75C9.92893 15.75 8.25 14.0711 8.25 12C8.25 9.92893 9.92893 8.25 12 8.25C14.0711 8.25 15.75 9.92893 15.75 12Z"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21.7519 15.0021C20.597 15.484 19.3296 15.7501 18 15.7501C12.6152 15.7501 8.25 11.3849 8.25 6.00011C8.25 4.67052 8.51614 3.40308 8.99806 2.24817C5.47566 3.71798 3 7.19493 3 11.2501C3 16.6349 7.36522 21.0001 12.75 21.0001C16.8052 21.0001 20.2821 18.5245 21.7519 15.0021Z"/></symbol>
+  <symbol id="i-computer-desktop" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17.25V18.2574C9 19.053 8.68393 19.8161 8.12132 20.3787L7.5 21H16.5L15.8787 20.3787C15.3161 19.8161 15 19.053 15 18.2574V17.25M21 5.25V15C21 16.2426 19.9926 17.25 18.75 17.25H5.25C4.00736 17.25 3 16.2426 3 15V5.25M21 5.25C21 4.00736 19.9926 3 18.75 3H5.25C4.00736 3 3 4.00736 3 5.25M21 5.25V12C21 13.2426 19.9926 14.25 18.75 14.25H5.25C4.00736 14.25 3 13.2426 3 12V5.25"/></symbol>
+  <symbol id="i-view-columns" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4.5V19.5M15 4.5V19.5M4.125 19.5H19.875C20.4963 19.5 21 18.9963 21 18.375V5.625C21 5.00368 20.4963 4.5 19.875 4.5H4.125C3.50368 4.5 3 5.00368 3 5.625V18.375C3 18.9963 3.50368 19.5 4.125 19.5Z"/></symbol>
+  <symbol id="i-queue-list" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3.75 12H20.25M3.75 15.75H20.25M3.75 19.5H20.25M5.625 4.5H18.375C19.4105 4.5 20.25 5.33947 20.25 6.375C20.25 7.41053 19.4105 8.25 18.375 8.25H5.625C4.58947 8.25 3.75 7.41053 3.75 6.375C3.75 5.33947 4.58947 4.5 5.625 4.5Z"/></symbol>
+  <symbol id="i-arrows-right-left" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M7.5 21L3 16.5M3 16.5L7.5 12M3 16.5H16.5M16.5 3L21 7.5M21 7.5L16.5 12M21 7.5L7.5 7.5"/></symbol>
+  <symbol id="i-arrow-path" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16.0228 9.34841H21.0154V9.34663M2.98413 19.6444V14.6517M2.98413 14.6517L7.97677 14.6517M2.98413 14.6517L6.16502 17.8347C7.15555 18.8271 8.41261 19.58 9.86436 19.969C14.2654 21.1483 18.7892 18.5364 19.9685 14.1353M4.03073 9.86484C5.21 5.46374 9.73377 2.85194 14.1349 4.03121C15.5866 4.4202 16.8437 5.17312 17.8342 6.1655L21.0154 9.34663M21.0154 4.3558V9.34663"/></symbol>
+  <symbol id="i-x-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6L18 18"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4.5V19.5M19.5 12L4.5 12"/></symbol>
+  <symbol id="i-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M13.5 4.5L21 12M21 12L13.5 19.5M21 12H3"/></symbol>
+  <symbol id="i-clipboard-document" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8.25 7.5V6.10822C8.25 4.97324 9.09499 4.01015 10.2261 3.91627C10.5994 3.88529 10.9739 3.85858 11.3495 3.83619M15.75 18H18C19.2426 18 20.25 16.9926 20.25 15.75V6.10822C20.25 4.97324 19.405 4.01015 18.2739 3.91627C17.9006 3.88529 17.5261 3.85858 17.1505 3.83619M15.75 18.75V16.875C15.75 15.011 14.239 13.5 12.375 13.5H10.875C10.2537 13.5 9.75 12.9963 9.75 12.375V10.875C9.75 9.01104 8.23896 7.5 6.375 7.5H5.25M17.1505 3.83619C16.8672 2.91757 16.0116 2.25 15 2.25H13.5C12.4884 2.25 11.6328 2.91757 11.3495 3.83619M17.1505 3.83619C17.2152 4.04602 17.25 4.26894 17.25 4.5V5.25H11.25V4.5C11.25 4.26894 11.2848 4.04602 11.3495 3.83619M6.75 7.5H4.875C4.25368 7.5 3.75 8.00368 3.75 8.625V20.625C3.75 21.2463 4.25368 21.75 4.875 21.75H14.625C15.2463 21.75 15.75 21.2463 15.75 20.625V16.5C15.75 11.5294 11.7206 7.5 6.75 7.5Z"/></symbol>
+  <symbol id="i-document-duplicate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15.75 17.25V20.625C15.75 21.2463 15.2463 21.75 14.625 21.75H4.875C4.25368 21.75 3.75 21.2463 3.75 20.625V7.875C3.75 7.25368 4.25368 6.75 4.875 6.75H6.75C7.26107 6.75 7.76219 6.7926 8.25 6.87444M15.75 17.25H19.125C19.7463 17.25 20.25 16.7463 20.25 16.125V11.25C20.25 6.79051 17.0066 3.08855 12.75 2.37444C12.2622 2.2926 11.7611 2.25 11.25 2.25H9.375C8.75368 2.25 8.25 2.75368 8.25 3.375V6.87444M15.75 17.25H9.375C8.75368 17.25 8.25 16.7463 8.25 16.125V6.87444M20.25 13.5V11.625C20.25 9.76104 18.739 8.25 16.875 8.25H15.375C14.7537 8.25 14.25 7.74632 14.25 7.125V5.625C14.25 3.76104 12.739 2.25 10.875 2.25H9.75"/></symbol>
+  <symbol id="i-arrow-down-tray" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5V18.75C3 19.9926 4.00736 21 5.25 21H18.75C19.9926 21 21 19.9926 21 18.75V16.5M16.5 12L12 16.5M12 16.5L7.5 12M12 16.5V3"/></symbol>
+</svg>
+
+<header>
+  <h1>sbs</h1>
+  <div class="mode theme" id="theme" role="group" aria-label="Theme">
+    <button type="button" data-pick="light" title="Light" aria-label="Light"><svg class="ico" aria-hidden="true"><use href="#i-sun"/></svg></button>
+    <button type="button" data-pick="dark" title="Dark" aria-label="Dark"><svg class="ico" aria-hidden="true"><use href="#i-moon"/></svg></button>
+    <button type="button" data-pick="device" title="Device settings" aria-label="Device settings"><svg class="ico" aria-hidden="true"><use href="#i-computer-desktop"/></svg></button>
+  </div>
+  <div class="hint">drop, paste or browse two images · pick order · combine with labels</div>
+</header>
+
+<div class="stage">
+  <div class="slot" id="slotA" tabindex="0"></div>
+
+  <button type="button" class="swap" id="swapBtn" title="swap order">
+    <svg class="ico" aria-hidden="true"><use href="#i-arrows-right-left"/></svg>
+    <span>SWAP</span>
+  </button>
+
+  <div class="slot" id="slotB" tabindex="0"></div>
+</div>
+<div class="hint" id="pasteHint"></div>
+
+<div class="controls">
+  <div class="mode">
+    <button type="button" id="modeH" class="active"><svg class="ico" aria-hidden="true"><use href="#i-view-columns"/></svg>horizontal</button>
+    <button type="button" id="modeV"><svg class="ico" aria-hidden="true"><use href="#i-queue-list"/></svg>vertical</button>
+  </div>
+  <button type="button" class="action-btn" id="resetBtn" disabled><svg class="ico" aria-hidden="true"><use href="#i-arrow-path"/></svg><span>start over</span></button>
+  <div class="spacer"></div>
+  <button type="button" class="submit" id="submitBtn" disabled>append<svg class="ico" aria-hidden="true"><use href="#i-arrow-right"/></svg></button>
+</div>
+
+<div class="result" id="result">
+  <div class="result-panel">
+    <div class="result-wrapper" id="resultWrapper">
+      <div class="image-container">
+        <img id="resultImg" alt="appended result">
+      </div>
+    </div>
+    <div class="meta" id="resultMeta"></div>
+    <div class="result-row">
+      <input class="filename-field" id="filenameField" spellcheck="false">
+      <button type="button" class="action-btn" id="copyImgBtn"><svg class="ico" aria-hidden="true"><use href="#i-clipboard-document"/></svg><span>copy image</span></button>
+      <button type="button" class="action-btn" id="copyBtn"><svg class="ico" aria-hidden="true"><use href="#i-document-duplicate"/></svg><span>copy filename</span></button>
+      <button type="button" class="action-btn" id="downloadBtn"><svg class="ico" aria-hidden="true"><use href="#i-arrow-down-tray"/></svg><span>download</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="hint">runs in your browser · nothing is uploaded</div>
+
+<script>
+  const state = { A: null, B: null, mode: 'h', out: null, target: null };
+  const $ = id => document.getElementById(id);
+  const SIDE = { A: 'LEFT', B: 'RIGHT' };
+  const icon = name => `<svg class="ico" aria-hidden="true"><use href="#i-${name}"/></svg>`;
+
+  function setupSlot(key) {
+    const slot = $('slot' + key);
+    const select = () => { state.target = key; refresh(); };
+
+    slot.addEventListener('click', select);
+    slot.addEventListener('keydown', e => {
+      if (e.target === slot && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); select(); }
+    });
+    slot.addEventListener('change', e => {
+      if (e.target.files[0]) loadFile(key, e.target.files[0]);
+    });
+
+    ['dragenter','dragover'].forEach(evt =>
+      slot.addEventListener(evt, e => {
+        e.preventDefault(); e.stopPropagation();
+        slot.classList.add('drag');
+      })
+    );
+    ['dragleave','drop'].forEach(evt =>
+      slot.addEventListener(evt, e => {
+        e.preventDefault(); e.stopPropagation();
+        slot.classList.remove('drag');
+      })
+    );
+    slot.addEventListener('drop', e => {
+      const f = e.dataTransfer.files[0];
+      if (f && f.type.startsWith('image/')) loadFile(key, f);
+    });
+  }
+
+  function loadFile(key, file, name = file.name) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = new Image();
+      img.onload = () => {
+        state[key] = { file, img, name };
+        state.target = null;
+        renderSlot(key);
+        $('result').classList.remove('show');
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function renderSlot(key) {
+    const slot = $('slot' + key);
+    const s = state[key];
+    slot.classList.toggle('filled', !!s);
+    if (!s) {
+      slot.innerHTML = `<span class="label">${SIDE[key]}</span>
+        <div class="placeholder"><svg class="big" aria-hidden="true"><use href="#i-plus"/></svg>paste or drop<button class="browse" type="button">browse</button></div>
+        <input type="file" id="input${key}" accept="image/*">`;
+      slot.querySelector('.browse').addEventListener('click', () => $('input' + key).click());
+    } else {
+      slot.innerHTML = `<span class="label">${SIDE[key]}</span>
+        <img src="${s.img.src}" alt="">
+        <span class="filename"></span>
+        <button class="clear" type="button" title="clear" aria-label="Clear ${SIDE[key]} image">${icon('x-mark')}</button>`;
+      slot.querySelector('.filename').textContent = s.name;
+      slot.querySelector('.clear').addEventListener('click', e => {
+        e.stopPropagation();
+        state[key] = null;
+        renderSlot(key);
+        $('result').classList.remove('show');
+      });
+    }
+    refresh();
+  }
+
+  function refresh() {
+    $('submitBtn').disabled = !(state.A && state.B);
+    $('resetBtn').disabled = !(state.A || state.B);
+    const t = state.target || (!state.A ? 'A' : !state.B ? 'B' : null);
+    ['A', 'B'].forEach(k => $('slot' + k).classList.toggle('target', k === t));
+    $('pasteHint').textContent = t
+      ? `Paste goes to the ${SIDE[t]} panel · click a panel to pick another`
+      : 'Both panels are full · click one to replace it, or paste to start a new pair';
+  }
+
+  $('swapBtn').addEventListener('click', () => {
+    [state.A, state.B] = [state.B, state.A];
+    renderSlot('A');
+    renderSlot('B');
+    $('result').classList.remove('show');
+  });
+
+  $('resetBtn').addEventListener('click', () => {
+    state.A = state.B = state.out = state.target = null;
+    renderSlot('A');
+    renderSlot('B');
+    $('result').classList.remove('show');
+  });
+
+  $('modeH').addEventListener('click', () => setMode('h'));
+  $('modeV').addEventListener('click', () => setMode('v'));
+  function setMode(m) {
+    state.mode = m;
+    [['modeH', 'h'], ['modeV', 'v']].forEach(([id, k]) => {
+      $(id).classList.toggle('active', m === k);
+      $(id).setAttribute('aria-pressed', m === k);
+    });
+  }
+
+  function setTheme(t) {
+    if (t === 'device') document.documentElement.removeAttribute('data-theme');
+    else document.documentElement.dataset.theme = t;
+    document.querySelectorAll('#theme button').forEach(b => {
+      const on = b.dataset.pick === t;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', on);
+    });
+    try { if (t === 'device') localStorage.removeItem('sbs-theme'); else localStorage.setItem('sbs-theme', t); } catch {}
+  }
+  document.querySelectorAll('#theme button').forEach(b => b.addEventListener('click', () => setTheme(b.dataset.pick)));
+
+  function stripExt(name) {
+    return name.replace(/\.[^/.]+$/, '');
+  }
+
+  $('submitBtn').addEventListener('click', () => {
+    const a = state.A.img, b = state.B.img;
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+
+    if (state.mode === 'h') {
+      const h = Math.max(a.height, b.height);
+      const barWidth = Math.round(Math.min(Math.max(h * 0.08, 28), 220));
+      const fontSize = Math.round(barWidth * 0.62);
+      const aw = a.width * (h / a.height);
+      const bw = b.width * (h / b.height);
+      canvas.width = Math.round(aw + bw + barWidth * 2);
+      canvas.height = h;
+
+      ctx.fillStyle = '#1db854';
+      ctx.fillRect(0, 0, barWidth, h);
+      ctx.drawImage(a, barWidth, 0, aw, h);
+
+      ctx.fillStyle = '#1db854';
+      ctx.fillRect(barWidth + aw, 0, barWidth, h);
+      ctx.drawImage(b, barWidth * 2 + aw, 0, bw, h);
+
+      ctx.fillStyle = 'white';
+      ctx.font = `bold ${fontSize}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.save();
+      ctx.translate(barWidth / 2, h / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('LEFT', 0, 0);
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(barWidth + aw + barWidth / 2, h / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.fillText('RIGHT', 0, 0);
+      ctx.restore();
+    } else {
+      const w = Math.max(a.width, b.width);
+      const barWidth = Math.round(Math.min(Math.max(w * 0.08, 28), 220));
+      const fontSize = Math.round(barWidth * 0.62);
+      const ah = a.height * (w / a.width);
+      const bh = b.height * (w / b.width);
+      canvas.width = w;
+      canvas.height = Math.round(ah + bh + barWidth * 2);
+
+      ctx.fillStyle = '#1db854';
+      ctx.fillRect(0, 0, w, barWidth);
+      ctx.drawImage(a, 0, barWidth, w, ah);
+
+      ctx.fillStyle = '#1db854';
+      ctx.fillRect(0, barWidth + ah, w, barWidth);
+      ctx.drawImage(b, 0, barWidth * 2 + ah, w, bh);
+
+      ctx.fillStyle = 'white';
+      ctx.font = `bold ${fontSize}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.save();
+      ctx.translate(w / 2, barWidth / 2);
+      ctx.fillText('LEFT', 0, 0);
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(w / 2, barWidth + ah + barWidth / 2);
+      ctx.fillText('RIGHT', 0, 0);
+      ctx.restore();
+    }
+
+    const dataUrl = canvas.toDataURL('image/png');
+    if (dataUrl === 'data:,') {
+      alert('These images are too large for this browser to combine. Shrink them and try again.');
+      return;
+    }
+    state.out = canvas;
+    $('resultImg').src = dataUrl;
+    $('resultMeta').textContent =
+      `${canvas.width} × ${canvas.height}px · ${state.mode === 'h' ? 'horizontal' : 'vertical'} append (with labels)`;
+
+    const suggested = `${stripExt(state.A.name)}_${stripExt(state.B.name)}.png`;
+    $('filenameField').value = suggested;
+    $('result').classList.add('show');
+    $('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    $('downloadBtn').onclick = () => {
+      const a2 = document.createElement('a');
+      a2.href = dataUrl;
+      a2.download = $('filenameField').value || 'appended.png';
+      a2.click();
+    };
+  });
+
+  function flash(btn, text, ok = true) {
+    const label = btn.querySelector('span');
+    label.dataset.orig ||= label.textContent;
+    label.textContent = text;
+    btn.classList.toggle('copied', ok);
+    setTimeout(() => { label.textContent = label.dataset.orig; btn.classList.remove('copied'); }, 1200);
+  }
+
+  $('copyBtn').addEventListener('click', async () => {
+    const btn = $('copyBtn');
+    try {
+      await navigator.clipboard.writeText($('filenameField').value);
+      flash(btn, 'copied');
+    } catch {
+      flash(btn, 'copy blocked', false);
+    }
+  });
+
+  $('copyImgBtn').addEventListener('click', async () => {
+    const btn = $('copyImgBtn');
+    try {
+      const blob = new Promise(r => state.out.toBlob(r));
+      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      flash(btn, 'copied');
+    } catch {
+      flash(btn, 'copy blocked · use download', false);
+    }
+  });
+
+  document.addEventListener('paste', e => {
+    const file = [...e.clipboardData.files].find(f => f.type.startsWith('image/'));
+    if (!file) return;
+    e.preventDefault();
+    const key = state.target || (!state.A ? 'A' : !state.B ? 'B' : 'A');
+    if (!state.target && state.A && state.B) { state.B = null; renderSlot('B'); }
+    loadFile(key, file, key === 'A' ? 'left.png' : 'right.png');
+  });
+
+  setupSlot('A');
+  setupSlot('B');
+  renderSlot('A');
+  renderSlot('B');
+  setMode('h');
+  let saved = 'device';
+  try { const t = localStorage.getItem('sbs-theme'); if (t === 'light' || t === 'dark') saved = t; } catch {}
+  setTheme(saved);
+</script>
+
+</body>
+</html>
