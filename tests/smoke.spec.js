@@ -195,6 +195,6 @@ test('one h1, and the search and share tags point at tekapo.co/sbs', async ({ pa
   await expect(page.locator('h1')).toContainText('Combine images online');
   await expect(page.locator('link[rel=canonical]')).toHaveAttribute('href', 'https://tekapo.co/sbs/');
   await expect(page.locator('meta[name=description]')).toHaveAttribute('content', /^Combine images online/);
-  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', 'https://tekapo.co/sbs/docs-public/combine-two-images-side-by-side.png');
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', 'https://tekapo.co/sbs/docs-public/combine-two-images-side-by-side.png?v=2');
   JSON.parse(await page.locator('script[type="application/ld+json"]').textContent());
 });
