@@ -71,8 +71,9 @@ test('swap trades the two images and hides the old result', async ({ page }) => 
   await expect(page.locator('#slotB.filled')).toHaveCount(1);
   await page.click('#submitBtn');
   await expect(page.locator('#result')).toHaveClass(/show/);
-  await page.click('#swapBtn');
+  await page.click('#backBtn');
   await expect(page.locator('#result')).not.toHaveClass(/show/);
+  await page.click('#swapBtn');
   await expect(page.locator('#slotA .filename')).toHaveText('right.png');
   await expect(page.locator('#slotB .filename')).toHaveText('left.png');
   expect(await page.evaluate(() => [state.A.img.width, state.B.img.width])).toEqual([100, 240]);
@@ -84,7 +85,7 @@ test('start over clears both panels and the result and keeps the layout', async 
   await pastePair(page);
   await page.click('#submitBtn');
   await expect(page.locator('#result')).toHaveClass(/show/);
-  await page.click('#resetBtn');
+  await page.click('#resetTwin');
   await expect(page.locator('.slot.filled')).toHaveCount(0);
   await expect(page.locator('#result')).not.toHaveClass(/show/);
   await expect(page.locator('#submitBtn')).toBeDisabled();
@@ -145,4 +146,46 @@ test('light, dark and device themes, and the choice is remembered', async ({ pag
   expect(await bg()).toBe(dark);
   await page.emulateMedia({ colorScheme: 'light' });
   expect(await bg()).toBe(light);
+});
+
+test('labels are on by default and can be turned off', async ({ page }) => {
+  await expect(page.locator('#annotate')).toBeChecked();
+  await pastePair(page);
+  await page.click('label.annotate');
+  await page.click('#submitBtn');
+  await expect(page.locator('#resultMeta')).toContainText('480 × 150px');
+  await expect(page.locator('#resultMeta')).toContainText('no labels');
+});
+
+test('append swaps card 1 for the result card, and back keeps both images', async ({ page }) => {
+  await pastePair(page);
+  await page.click('#submitBtn');
+  await expect(page.locator('.step1')).toBeHidden();
+  await expect(page.locator('#result')).toBeVisible();
+  await expect(page.locator('#result h2')).toBeFocused();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > document.documentElement.clientWidth)).toBe(false);
+  await page.click('#backBtn');
+  await expect(page.locator('#result')).toBeHidden();
+  await expect(page.locator('.step1')).toBeVisible();
+  await expect(page.locator('.slot.filled')).toHaveCount(2);
+});
+
+test('arrow keys move the paste box and focus together', async ({ page }) => {
+  await page.focus('#slotA');
+  await page.keyboard.press('ArrowRight');
+  await expect(page.locator('#slotB.target')).toHaveCount(1);
+  await expect(page.locator('#slotB')).toBeFocused();
+  await expect(page.locator('.slot.target')).toHaveCount(1);
+  await paste(page, 240, 150);
+  await expect(page.locator('#slotB.filled')).toHaveCount(1);
+  await expect(page.locator('#slotA')).toBeFocused();
+  await expect(page.locator('#slotA.target')).toHaveCount(1);
+});
+
+test('the landing page fits without scrolling on common laptop screens', async ({ page }, info) => {
+  test.skip(info.project.name !== 'desktop-1280', 'phones scroll');
+  for (const [width, height] of [[1280, 900], [1280, 800], [1366, 768]]) {
+    await page.setViewportSize({ width, height });
+    expect(await page.evaluate(() => document.documentElement.scrollHeight - innerHeight)).toBeLessThanOrEqual(0);
+  }
 });
